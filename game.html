@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>光影對決｜戰鬥頁</title>
+<style>
+:root{--panel-bg:rgba(7,11,25,.84);--glow-O:0 0 30px #f6d26a;--glow-X:0 0 30px #9a7bff;--win-line-color:#ccff00;}
+*{box-sizing:border-box} html,body{height:100%}
+body{margin:0;padding:12px 0 0;min-height:100vh;color:white;font-family:"Microsoft JhengHei",sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;background:#050816;overflow:hidden;position:relative}
+.bg-layer{position:fixed;inset:0;background:#050816 url('Gemini_Generated_Image_axefmzaxefmzaxef.jpg') center/cover no-repeat;filter:brightness(0.3);z-index:-2}
+#topbar{width:min(1560px,95vw);display:flex;justify-content:space-between;gap:14px;margin:12px auto 8px}
+.pill{background:rgba(7,12,26,.8);border:1px solid rgba(255,255,255,.12);box-shadow:0 10px 24px rgba(0,0,0,.22);backdrop-filter:blur(10px);padding:12px 18px;border-radius:16px;font-size:16px;font-weight:800}
+#timer-container{font-size:3.2rem;font-weight:900;color:#00d4ff;padding:10px 68px;background:var(--panel-bg);border:4px solid #00d4ff;border-radius:60px;margin:8px 0 14px;box-shadow:0 0 30px #00d4ff;transition:all .3s}
+@keyframes pulseWarn {0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
+.timer-warn{color:#ff4b2b!important;border-color:#ff4b2b!important;box-shadow:0 0 30px #ff4b2b!important;animation:pulseWarn .55s infinite}
+.game-main{display:flex;align-items:center;justify-content:center;gap:34px;width:95%;max-width:1680px;margin-top:12px;transform:translateY(-20px)}
+.hp-visual-container{position:relative;flex:0 0 200px;width:200px;min-width:200px;height:760px;min-height:760px;margin:0 -8px}.hp-img-base{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain}.hp-bg{filter:brightness(.2);z-index:1}.hp-ghost{z-index:2;filter:brightness(2) saturate(0);transition:clip-path 1s ease-out;opacity:.5}.hp-fill{z-index:3;transition:clip-path .3s ease-out}.defending-bar{filter:drop-shadow(0 0 15px #00d4ff) brightness(1.2)!important}.hp-text{position:absolute;width:100%;text-align:center;font-size:2.15rem;font-weight:900;color:#fff;text-shadow:0 0 8px #000;z-index:10;transition:top .4s}
+.side-panel{display:flex;align-items:center;gap:22px;background:var(--panel-bg);padding:30px 26px 24px;border-radius:35px;border:3px solid rgba(255,255,255,.05);transition:all .4s ease;min-width:450px;min-height:430px}.identity-badge{position:absolute;top:16px;padding:10px 16px;border-radius:16px;background:rgba(6,10,22,.95);border:1px solid rgba(255,255,255,.18);font-weight:900;font-size:16px;letter-spacing:1px;z-index:5}.identity-badge.my{right:18px;color:#7CFFB2;border-color:rgba(124,255,178,.45)}.identity-badge.enemy{left:18px;color:#FF8F8F;border-color:rgba(255,143,143,.45)}.side-panel-wrap{position:relative}.avatar{width:190px;height:336px;border-radius:24px;object-fit:cover;border:3px solid rgba(255,255,255,.2);filter:brightness(.4);transition:all .4s ease;flex:0 0 auto}.stunned-avatar{filter:sepia(1) hue-rotate(300deg) brightness(.6)!important;border-color:#ff00ff!important}.active-side-O .avatar{filter:brightness(1);border-color:#f6d26a;box-shadow:var(--glow-O)}.active-side-X .avatar{filter:brightness(1);border-color:#9a7bff;box-shadow:var(--glow-X)}
+.faction-tag{display:inline-block;padding:6px 12px;border-radius:999px;font-weight:800;margin-bottom:12px}.light-tag{background:rgba(124,255,178,.12);border:1px solid rgba(124,255,178,.25);color:#a9ffd0}.dark-tag{background:rgba(180,140,255,.12);border:1px solid rgba(180,140,255,.25);color:#cdb5ff}.sp-readout,.buff-readout,.ult-readout{margin-top:12px;font-size:17px;color:rgba(255,255,255,.9);text-align:center}.buff-readout{min-height:54px;line-height:1.45;max-width:170px}.resource-col{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:12px;min-width:96px}.resource-tag{font-size:19px;font-weight:900;letter-spacing:2px}.resource-tag.sp{color:#a7d1ff}.resource-tag.ult{color:#ffd36d}.sp-column-vertical,.ult-column-vertical{display:flex;flex-direction:column-reverse;gap:16px}.sp-dot-wrap,.ult-dot-wrap{position:relative;width:76px;height:76px}.sp-dot-base,.sp-dot-fill,.ult-dot-base,.ult-dot-fill{position:absolute;inset:0;background-size:contain;background-repeat:no-repeat;border-radius:50%}.sp-dot-base{background-image:url('sp_off.png');opacity:.5}.sp-dot-fill{background-image:url('sp_on.png');box-shadow:0 0 15px rgba(96,173,255,.75)}.ult-dot-base{background-image:url('sp_off.png');opacity:.42;filter:hue-rotate(145deg) saturate(1.2)}.ult-dot-fill{background-image:url('sp_on.png');filter:hue-rotate(140deg) saturate(1.25) brightness(1.08);box-shadow:0 0 18px rgba(255,194,74,.72)}
+.ult-ready-glow .ult-dot-wrap{animation:ultPulse .8s infinite alternate}
+@keyframes ultPulse{from{filter:drop-shadow(0 0 6px rgba(255,74,74,.55)) drop-shadow(0 0 8px rgba(255,210,70,.45))}to{filter:drop-shadow(0 0 18px rgba(255,74,74,.95)) drop-shadow(0 0 24px rgba(255,210,70,.8))}}
+.board-wrapper{position:relative}.board{display:grid;grid-template-columns:repeat(3,170px);grid-template-rows:repeat(3,170px);gap:20px;padding:30px;background:linear-gradient(180deg,rgba(10,14,31,.74),rgba(7,10,22,.88));border-radius:30px;border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(10px);box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 18px 34px rgba(0,0,0,.24)}.cell{position:relative;background:linear-gradient(180deg,rgba(3,5,12,.82),rgba(12,18,35,.82));border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:5.6rem;font-weight:bold;cursor:pointer;transition:.2s;border:1px solid rgba(255,255,255,.08);box-shadow:inset 0 1px 0 rgba(255,255,255,.03)}.cell::before{content:"";position:absolute;inset:0;border-radius:18px;background:linear-gradient(135deg, rgba(103,232,255,.03), transparent 42%, transparent 65%, rgba(141,107,255,.03));pointer-events:none}.cell.O{color:#f6d26a;text-shadow:var(--glow-O)}.cell.X{color:#9a7bff;text-shadow:var(--glow-X)}@keyframes blinkWarn{from{opacity:1}to{opacity:.3;filter:brightness(2)}}.warning-cell{animation:blinkWarn .6s infinite alternate}
+#win-line-canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:5}.winning-line{stroke:var(--win-line-color);stroke-width:12;stroke-linecap:round;filter:drop-shadow(0 0 15px var(--win-line-color));stroke-dasharray:1000;stroke-dashoffset:1000;animation:drawLine .5s ease-out forwards}@keyframes drawLine{to{stroke-dashoffset:0}}
+.skill-footer{margin-top:18px;display:flex;flex-direction:column;align-items:center;gap:14px;background:linear-gradient(180deg,rgba(10,14,31,.82),rgba(8,12,24,.94));padding:18px 48px 18px;border-radius:42px;border:1px solid rgba(255,255,255,.14);box-shadow:0 16px 30px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.04);width:min(1180px,84vw)}.usage-dots{display:flex;gap:12px;padding-bottom:2px}.u-dot{width:14px;height:14px;border-radius:50%;background:#333;transition:.3s;border:1px solid #555}.u-dot.fill{background:#00d4ff;box-shadow:0 0 10px #00d4ff;border-color:#fff}.skill-header-row{display:flex;align-items:center;gap:36px;width:100%}.skill-label{font-size:2rem;font-weight:bold;color:#77ecff;border-right:3px solid rgba(255,255,255,.16);padding-right:32px;letter-spacing:2px;text-shadow:0 0 14px rgba(103,232,255,.20);flex:0 0 auto}.skill-list{display:flex;gap:24px;justify-content:flex-start;flex:1}.s-btn{position:relative;width:188px;height:98px;border:none;border-radius:22px;cursor:not-allowed;background-size:cover;background-position:center;opacity:.4;filter:brightness(.6);transition:all .3s;overflow:hidden}.s-btn::before{content:"";position:absolute;inset:0;background:linear-gradient(115deg, transparent 30%, rgba(255,255,255,.18) 48%, transparent 66%);transform:translateX(-140%);transition:transform .6s ease;pointer-events:none}.s-btn.active:hover::before{transform:translateX(170%)}.s-btn.active{cursor:pointer;opacity:1;filter:brightness(1);transform:translateY(-5px);border:3px solid #00d4ff;box-shadow:0 0 20px rgba(0,212,255,.6)}.cost-tag{position:absolute;bottom:8px;right:15px;background:rgba(0,0,0,.6);padding:2px 8px;border-radius:10px;font-size:.9rem;color:#f6d26a;border:1px solid rgba(246,210,106,.4);pointer-events:none}.btn-atk{background-image:url('skill_atk.png')}.btn-def{background-image:url('skill_def.png')}.btn-hel{background-image:url('skill_hel.png')}.btn-stn{background-image:url('skill_stn.png')}.end-turn-wrap{display:flex;justify-content:center;width:100%;margin-top:4px;padding-bottom:6px}.end-turn-btn{min-width:320px;height:64px;border:none;border-radius:20px;background:linear-gradient(90deg,#247cff,#7b5cff);color:#fff;font-size:1.9rem;font-weight:900;box-shadow:0 12px 24px rgba(24,54,120,.32), inset 0 1px 0 rgba(255,255,255,.18)}
+.float-text{position:absolute;min-width:150px;text-align:center;font-size:2.2rem;font-weight:900;z-index:100;pointer-events:none;animation:floatUp 1s ease-out forwards;text-shadow:0 0 10px rgba(0,0,0,.85);left:50%;transform:translateX(-50%)}@keyframes floatUp{0%{opacity:0;transform:translateY(0) scale(.8)}20%{opacity:1;transform:scale(1.2)}100%{opacity:0;transform:translateY(-80px) scale(1)}}@keyframes shake{0%{transform:translate(1px,1px) rotate(0deg)}20%{transform:translate(-3px,0) rotate(-1deg)}40%{transform:translate(3px,2px) rotate(1deg)}60%{transform:translate(-3px,1px) rotate(-1deg)}80%{transform:translate(3px,1px) rotate(1deg)}100%{transform:translate(1px,-2px) rotate(0deg)}}.shake-effect{animation:shake .3s cubic-bezier(.36,.07,.19,.97) both}
+#resultOverlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(3,4,12,.66);backdrop-filter:blur(8px);z-index:10000}#resultOverlay.show{display:flex}.result-card{min-width:min(88vw,560px);padding:34px 32px;border-radius:28px;text-align:center;border:1px solid rgba(255,255,255,.18);box-shadow:0 24px 54px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.06)}.result-card.win{background:linear-gradient(135deg,rgba(246,210,106,.18),rgba(0,212,255,.16),rgba(0,0,0,.84));border-color:rgba(246,210,106,.45)}.result-card.lose{background:linear-gradient(135deg,rgba(90,40,130,.35),rgba(24,10,44,.88),rgba(0,0,0,.84));border-color:rgba(154,123,255,.35)}.result-title{font-size:4rem;font-weight:900;letter-spacing:6px;margin:0 0 10px}.result-card.win .result-title{color:#ffe37a;text-shadow:0 0 18px rgba(0,212,255,.45)}.result-card.lose .result-title{color:#c9a8ff;text-shadow:0 0 18px rgba(154,123,255,.35)}.result-sub{font-size:1.2rem;opacity:.92;margin-bottom:16px}.result-actions{display:flex;justify-content:center;gap:14px;flex-wrap:wrap}.result-actions button{min-width:160px;height:48px;border:none;border-radius:14px;font-size:1.05rem;font-weight:900;cursor:pointer}#btnRematch{background:linear-gradient(90deg,#00c6ff,#0072ff);color:#fff}#btnBackMenu{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.18)}
+.ult-ready-tip{position:fixed;top:148px;left:50%;transform:translateX(-50%);padding:12px 22px;border-radius:18px;background:linear-gradient(90deg,rgba(120,0,0,.92),rgba(255,82,0,.92));border:1px solid rgba(255,220,120,.5);box-shadow:0 0 22px rgba(255,80,0,.45);font-size:1.05rem;font-weight:900;letter-spacing:1px;z-index:999;display:none}.ult-ready-tip.show{display:block;animation:tipPop .25s ease-out}.board.locked .cell:not(.O):not(.X){cursor:not-allowed;opacity:.85}@keyframes tipPop{from{opacity:0;transform:translateX(-50%) translateY(-12px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@media (max-width:1500px){body{overflow:auto}.game-main{transform:scale(.9);transform-origin:top center}.skill-footer{transform:scale(.92)}}
+</style>
+</head>
+<body>
+<div class="bg-layer"></div>
+<div id="topbar"><div class="pill">房號：<strong id="roomCode">LOCAL</strong></div><div class="pill" id="turnText">目前回合：光 / O</div></div>
+<div id="timer-container">30</div>
+<div class="game-main" id="main-container">
+  <div class="hp-visual-container" id="hp-box-O"><div id="hp-val-O" class="hp-text">100%</div><img src="left-hp-bar.png" class="hp-img-base hp-bg"><img src="left-hp-bar.png" id="hp-ghost-O" class="hp-img-base hp-ghost"><img src="left-hp-bar.png" id="hp-fill-O" class="hp-img-base hp-fill"></div>
+  <div class="side-panel-wrap">
+    <div class="side-panel active-side-O" id="panel-O">
+      <img src="image_ba490a.png" class="avatar" id="avatar-O" alt="P1">
+      <div class="resource-col ult-col"><div class="resource-tag ult">充能</div><div class="ult-column-vertical" id="ult-display-O"></div><div class="ult-readout" id="ult-text-O">ULT 0 / 100</div><div class="buff-readout" id="buff-text-O">直排：當下回復 8 HP</div></div>
+      <div class="resource-col sp-col"><div class="identity-badge my" id="badge-O">光 / O</div><div class="sp-column-vertical" id="sp-display-O"></div><div class="sp-readout" id="sp-text-O">SP 0 / 100</div></div>
+    </div>
+  </div>
+  <div class="board-wrapper"><svg id="win-line-canvas"></svg><div class="board" id="board"></div></div>
+  <div class="side-panel-wrap">
+    <div class="side-panel active-side-X" id="panel-X">
+      <div class="resource-col sp-col"><div class="identity-badge enemy" id="badge-X">暗 / X</div><div class="sp-column-vertical" id="sp-display-X"></div><div class="sp-readout" id="sp-text-X">SP 0 / 100</div></div>
+      <div class="resource-col ult-col"><div class="resource-tag ult">充能</div><div class="ult-column-vertical" id="ult-display-X"></div><div class="ult-readout" id="ult-text-X">ULT 0 / 100</div><div class="buff-readout" id="buff-text-X">直排增加傷害</div></div>
+      <img src="image_ba4947.png" class="avatar" id="avatar-X" alt="P2">
+    </div>
+  </div>
+  <div class="hp-visual-container" id="hp-box-X"><div id="hp-val-X" class="hp-text">100%</div><img src="right-hp-bar.png" class="hp-img-base hp-bg"><img src="right-hp-bar.png" id="hp-ghost-X" class="hp-img-base hp-ghost"><img src="right-hp-bar.png" id="hp-fill-X" class="hp-img-base hp-fill"></div>
+</div>
+<div class="skill-footer"><div class="usage-dots" id="usage-dots-container"></div><div class="skill-header-row"><div class="skill-label">戰技命令</div><div class="skill-list" id="skill-list-container"></div></div><div class="end-turn-wrap"><button class="end-turn-btn" id="endTurnBtn" type="button">結束這回合</button></div></div>
+<div id="ultReadyTip" class="ult-ready-tip">你可以施放大招，按空白鍵</div>
+<div id="resultOverlay"><div id="resultCard" class="result-card win"><h1 id="resultTitle" class="result-title">勝利</h1><div id="resultSub" class="result-sub">本局已結束</div><div class="result-actions"><button id="btnRematch">重新遊玩</button><button id="btnBackMenu">返回菜單</button></div></div></div>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAmjWi-07_edTrrCKGBjo1JHvz-o1CloPM",
+  authDomain: "guangying-pvp.firebaseapp.com",
+  databaseURL: "https://guangying-pvp-default-rtdb.asia-southeast1.firebasedatabase.app/",
+  projectId: "guangying-pvp",
+  storageBucket: "guangying-pvp.firebasedatabase.app",
+  messagingSenderId: "529611021363",
+  appId: "1:529611021363:web:db39a8dd86d6d2f715d746"
+};
+const ROLE_IMAGE = { mage:'mage.png', knight:'knight.png', assassin:'assassin.png' };
+const ROLE_LABEL = { mage:'法師', knight:'騎士', assassin:'刺客' };
+const FACTION_LABEL = { light:'光', dark:'暗' };
+if (window.firebase && !firebase.apps.length) firebase.initializeApp(firebaseConfig);
+const db = window.firebase ? firebase.database() : null;
+const params = new URLSearchParams(location.search);
+const roomCode = params.get('room') || localStorage.getItem('gy_battle_room_code') || 'LOCAL';
+let mySlot = params.get('slot') || localStorage.getItem('gy_battle_slot') || 'O';
+const playerId = localStorage.getItem('gy_player_id') || '';
+const onlineMode = !!(db && roomCode && roomCode !== 'LOCAL');
+document.getElementById('roomCode').textContent = roomCode;
+
+const sounds={tap:new Audio('sounds/tap.mp3'),atk:new Audio('sounds/atk.mp3'),def:new Audio('sounds/def.mp3'),hel:new Audio('sounds/hel.mp3'),stn:new Audio('sounds/stn.mp3'),tick:new Audio('sounds/tick.mp3')};
+const WIN_LINES=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+const initialPlayerState=()=>({hp:100,sp:0,ult:0,skillUsed:0,stunned:0,defending:false,darkStacks:0});
+const initialBattleState=(host='O')=>({
+  turn:host==='X'?'X':'O',
+  grid:Array(9).fill(null),
+  queues:{O:[],X:[]},
+  data:{O:initialPlayerState(),X:initialPlayerState()},
+  timeLeft:60,
+  turnEndsAt:Date.now()+60000,
+  resolving:false,
+  placedThisTurn:false,
+  winner:null,
+  lastEvent:null,
+  winLines:[]
+});
+function asFirebaseArray(v,length){ if(Array.isArray(v)) return v; if(v&&typeof v==='object'){ const arr=Array(length).fill(null); for(const [k,val] of Object.entries(v)){ const i=Number(k); if(Number.isInteger(i)&&i>=0&&i<length) arr[i]=val; } return arr; } return null; }
+function normalizeBattleState(raw, host='O'){ const d=initialBattleState(host); const s=(raw&&typeof raw==='object')?raw:{}; return {
+  turn:(s.turn==='O'||s.turn==='X')?s.turn:d.turn,
+  grid:(asFirebaseArray(s.grid,9)||d.grid).map(v=>(v==='O'||v==='X')?v:null),
+  queues:{
+    O:(asFirebaseArray(s.queues?.O,9)||[]).filter(n=>Number.isInteger(n)&&n>=0&&n<9),
+    X:(asFirebaseArray(s.queues?.X,9)||[]).filter(n=>Number.isInteger(n)&&n>=0&&n<9)
+  },
+  data:{ O:{...d.data.O,...(s.data?.O||{})}, X:{...d.data.X,...(s.data?.X||{})} },
+  timeLeft:Number.isFinite(s.timeLeft)?s.timeLeft:d.timeLeft,
+  turnEndsAt:Number.isFinite(s.turnEndsAt)?s.turnEndsAt:d.turnEndsAt,
+  resolving:!!s.resolving,
+  placedThisTurn:!!s.placedThisTurn,
+  winner:s.winner||null,
+  lastEvent:s.lastEvent||null,
+  winLines:Array.isArray(s.winLines)?s.winLines:[]
+}; }
+let PLAYER_CONFIG = {
+  O: { faction: 'light', role: 'mage' },
+  X: { faction: 'dark', role: 'assassin' }
+};
+let battleState = initialBattleState();
+let roomCache = null;
+let localMode=true, timer=null, lastShownEventKey='';
+window.turn='O';
+window.data=battleState.data;
+
+function roomRef(path=''){ return db.ref(`rooms/${roomCode}${path?`/${path}`:''}`); }
+function battleRef(path=''){ return db.ref(`rooms/${roomCode}/battle${path?`/${path}`:''}`); }
+function clone(obj){ return JSON.parse(JSON.stringify(obj)); }
+function playSound(name){const s=sounds[name]; if(s){s.pause(); s.currentTime=0; s.play().catch(()=>{});}}
+function stopSound(name){const s=sounds[name]; if(s){s.pause(); s.currentTime=0;}}
+function otherSlot(s){ return s==='O'?'X':'O'; }
+function resolveMySlot(players){
+  if(playerId){
+    if(players?.O?.clientId && players.O.clientId===playerId) return 'O';
+    if(players?.X?.clientId && players.X.clientId===playerId) return 'X';
+  }
+  return mySlot==='X'?'X':'O';
+}
+
+function buildBoard(){
+  const board=document.getElementById('board');board.innerHTML='';
+  for(let i=0;i<9;i++){
+    const d=document.createElement('div');
+    d.className='cell';d.id='c-'+i;d.onclick=()=>tap(i);board.appendChild(d)
+  }
+}
+
+function buildSpDots(sp){
+  let html='';
+  for(let i=0;i<5;i++){
+    const seg=Math.max(0,Math.min(20,sp-i*20)); const fillPct=(seg/20)*100;
+    html+=`<div class="sp-dot-wrap"><div class="sp-dot-base"></div><div class="sp-dot-fill" style="clip-path: inset(${100-fillPct}% 0 0 0)"></div></div>`;
+  }
+  return html;
+}
+function buildUltDots(ult){
+  let html='';
+  for(let i=0;i<5;i++){
+    const seg=Math.max(0,Math.min(20,ult-i*20)); const fillPct=(seg/20)*100;
+    html+=`<div class="ult-dot-wrap"><div class="ult-dot-base"></div><div class="ult-dot-fill" style="clip-path: inset(${100-fillPct}% 0 0 0)"></div></div>`;
+  }
+  return html;
+}
+function triggerShake(){document.getElementById('main-container').classList.add('shake-effect'); setTimeout(()=>document.getElementById('main-container').classList.remove('shake-effect'),300)}
+function showFloatText(id,txt,col,x=0,y=0){const box=document.getElementById(id); if(!box) return; const el=document.createElement('div'); el.className='float-text'; el.innerText=txt; el.style.color=col; el.style.left=`calc(50% + ${x}px)`; el.style.top=`${220+y}px`; box.appendChild(el); setTimeout(()=>el.remove(),1000)}
+function showUltReadyTip(p){const tip=document.getElementById('ultReadyTip'); tip.textContent=`${p===mySlot?'你':'對手'}可以施放大招，按空白鍵`; tip.classList.add('show'); clearTimeout(showUltReadyTip.t); showUltReadyTip.t=setTimeout(()=>tip.classList.remove('show'),5000);}
+function calcLineSp(line){ return line.includes(4)?40:20; }
+function collectWinsForGrid(grid, player){ return WIN_LINES.filter(line=>line.every(idx=>grid[idx]===player)); }
+
+function applyPlayerConfig(players){
+  if (players?.O) PLAYER_CONFIG.O = { faction: players.O.faction || 'light', role: players.O.role || 'mage' };
+  if (players?.X) PLAYER_CONFIG.X = { faction: players.X.faction || 'dark', role: players.X.role || 'assassin' };
+  ['O','X'].forEach(slot=>{
+    const cfg=PLAYER_CONFIG[slot]||{};
+    const faction=cfg.faction||'light'; const role=cfg.role||'mage';
+    const badge=document.getElementById(`badge-${slot}`); if(badge) badge.textContent=`${FACTION_LABEL[faction]||faction} / ${slot}`;
+    const avatar=document.getElementById(`avatar-${slot}`); if(avatar && ROLE_IMAGE[role]) { avatar.src=ROLE_IMAGE[role]; avatar.alt=`${ROLE_LABEL[role]||role}-${slot}`; }
+  });
+}
+
+function showBattleEvent(ev){
+  if(!ev) return;
+  const key = JSON.stringify(ev);
+  if(key===lastShownEventKey) return;
+  lastShownEventKey = key;
+  const slot = ev.player || 'O';
+  if (ev.sp) showFloatText(`hp-box-${slot}`, `+${ev.sp} SP`, '#71e9ff', -30, -8);
+  if (ev.heal) showFloatText(`hp-box-${slot}`, `+${ev.heal} HP`, '#4CAF50', 30, 56);
+  if (ev.darkStacksGain) showFloatText(`hp-box-${slot}`, `增加傷害 ${ev.newDarkStacks} 層`, '#d7a6ff', 30, 56);
+  if (ev.damage) showFloatText(`hp-box-${ev.target}`, `-${ev.damage}`, '#ff4b2b', 0, 0);
+  if (ev.skill === 'stn') showFloatText(`hp-box-${ev.target}`, '主動技', '#ff00ff', 0, 0);
+  if (ev.ultCast) showFloatText(`hp-box-${slot}`, 'ULT!', '#ffd36d', 0, 10);
+}
+
+function drawWinLines(lines){
+  const canvas=document.getElementById('win-line-canvas');
+  const wrap=document.querySelector('.board-wrapper').getBoundingClientRect();
+  canvas.innerHTML=(lines||[]).map(combo=>{
+    const start=document.getElementById('c-'+combo[0]).getBoundingClientRect();
+    const end=document.getElementById('c-'+combo[2]).getBoundingClientRect();
+    const x1=(start.left+start.width/2)-wrap.left, y1=(start.top+start.height/2)-wrap.top;
+    const x2=(end.left+end.width/2)-wrap.left, y2=(end.top+end.height/2)-wrap.top;
+    return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="winning-line" />`;
+  }).join('');
+  if(lines && lines.length) setTimeout(()=>{ document.getElementById('win-line-canvas').innerHTML=''; }, 850);
+}
+
+function updateTimerDisplay(){
+  const el=document.getElementById('timer-container');
+  let remain = battleState.timeLeft || 0;
+  if(onlineMode && battleState.turnEndsAt){ remain = Math.max(0, Math.ceil((battleState.turnEndsAt - Date.now())/1000)); }
+  el.textContent = remain;
+  el.classList.toggle('timer-warn', remain<=10);
+}
+
+function updateUI(){
+  const state=battleState;
+  window.turn=state.turn; window.data=state.data;
+  document.getElementById('turnText').textContent=`目前回合：${FACTION_LABEL[PLAYER_CONFIG[state.turn]?.faction] || state.turn} / ${state.turn}`;
+  document.getElementById('board').classList.toggle('locked', state.placedThisTurn && state.turn===mySlot);
+  for(let i=0;i<9;i++){
+    let el=document.getElementById('c-'+i); el.innerText=state.grid[i]||''; el.className='cell '+(state.grid[i]||'');
+    if(state.grid[i] && state.queues[state.grid[i]]?.length===3 && state.queues[state.grid[i]][0]===i) el.classList.add('warning-cell');
+  }
+  ['O','X'].forEach(p=>{
+    const hp=state.data[p].hp;
+    document.getElementById(`hp-fill-${p}`).style.clipPath=`inset(${100-hp}% 0 0 0)`;
+    document.getElementById(`hp-ghost-${p}`).style.clipPath=`inset(${100-hp}% 0 0 0)`;
+    const valEl=document.getElementById(`hp-val-${p}`); valEl.innerText=Math.floor(hp)+'%'; valEl.style.top=`calc(${100-hp}% + 10px)`;
+    const avatar=document.getElementById(`avatar-${p}`);
+    avatar.classList.toggle('stunned-avatar', state.data[p].stunned>0);
+    document.getElementById(`hp-fill-${p}`).classList.toggle('defending-bar', !!state.data[p].defending);
+    document.getElementById(`panel-${p}`).className='side-panel'+(state.turn===p?' active-side-'+p:'');
+    document.getElementById(`sp-display-${p}`).innerHTML=buildSpDots(state.data[p].sp);
+    document.getElementById(`ult-display-${p}`).innerHTML=buildUltDots(state.data[p].ult||0);
+    document.getElementById(`sp-text-${p}`).innerText=`SP ${state.data[p].sp} / 100`;
+    document.getElementById(`ult-text-${p}`).innerText=`ULT ${state.data[p].ult||0} / 100`;
+    document.getElementById(`buff-text-${p}`).innerText=(PLAYER_CONFIG[p]?.faction||'light')==='light'?'直排：當下回復 8 HP':`直排增加傷害（${state.data[p].darkStacks} 層）`;
+    const ultCol=document.getElementById(`ult-display-${p}`).parentElement;
+    const ready=(state.data[p].ult||0)>=100;
+    ultCol.classList.toggle('ult-ready-glow', ready);
+  });
+  let dotsHTML=''; for(let i=0;i<3;i++) dotsHTML+=`<div class="u-dot ${i<(3-state.data[state.turn].skillUsed)?'fill':''}"></div>`;
+  document.getElementById('usage-dots-container').innerHTML=dotsHTML;
+  const isCurrentStunned=state.data[state.turn].stunned>0;
+  const isMyTurn = state.turn===mySlot;
+  const skills=[{t:'atk',c:20},{t:'def',c:40},{t:'hel',c:40},{t:'stn',c:60}];
+  let html='';
+  skills.forEach(s=>{
+    let can=isMyTurn&&state.placedThisTurn&&!isCurrentStunned&&state.data[state.turn].sp>=s.c&&state.data[state.turn].skillUsed<3&&!isGameOver()&&!state.resolving;
+    html+=`<button class="s-btn btn-${s.t} ${can?'active':''}" onclick="useSkill('${s.t}')"><div class="cost-tag">SP ${s.c}</div></button>`;
+  });
+  document.getElementById('skill-list-container').innerHTML=html;
+  const endBtn=document.getElementById('endTurnBtn');
+  endBtn.disabled = !(isMyTurn && state.placedThisTurn && !state.resolving && !isGameOver());
+  endBtn.style.opacity = endBtn.disabled ? '.55' : '1';
+  updateTimerDisplay();
+}
+
+function isGameOver(){ return !!battleState.winner || battleState.data.O.hp<=0 || battleState.data.X.hp<=0; }
+function showWinner(){
+  if(!isGameOver()) return;
+  clearInterval(timer); stopSound('tick');
+  const winner=battleState.winner || (battleState.data.O.hp<=0?'X':'O');
+  const overlay=document.getElementById('resultOverlay'); const card=document.getElementById('resultCard'); const title=document.getElementById('resultTitle'); const sub=document.getElementById('resultSub');
+  card.className='result-card '+(winner===mySlot?'win':'lose');
+  title.textContent = `${ROLE_LABEL[PLAYER_CONFIG[winner]?.role] || winner}勝利`;
+  sub.textContent = `${winner} 方獲勝`;
+  overlay.classList.add('show');
+}
+
+function attachRoomListener(){
+  roomRef().on('value', snap=>{
+    const room = snap.val();
+    if(!room) return;
+    roomCache = room;
+    const resolvedSlot = resolveMySlot(room.players || {});
+    if(resolvedSlot !== mySlot){
+      mySlot = resolvedSlot;
+      localStorage.setItem('gy_battle_slot', mySlot);
+    }
+    applyPlayerConfig(room.players || {});
+    const prev = clone(battleState);
+    battleState = normalizeBattleState(room.battle, room.hostSlot || 'O');
+    showBattleEvent(battleState.lastEvent);
+    updateUI();
+    if (prev.turn !== battleState.turn && (battleState.data?.[battleState.turn]?.ult || 0) >= 100) showUltReadyTip(battleState.turn);
+    if (battleState.winLines && battleState.winLines.length) drawWinLines(battleState.winLines); else drawWinLines([]);
+    if (isGameOver()) showWinner();
+  });
+}
+
+async function ensureOnlineBattle(){
+  const roomSnap = await roomRef().get();
+  const room = roomSnap.val();
+  if (!room) throw new Error('room not found');
+  roomCache = room;
+  mySlot = resolveMySlot(room.players || {});
+  localStorage.setItem('gy_battle_slot', mySlot);
+  applyPlayerConfig(room.players || {});
+  await roomRef().transaction(r=>{
+    if(!r) return r;
+    if(!r.battle){
+      r.battle = initialBattleState(r.hostSlot || 'O');
+    } else {
+      r.battle = normalizeBattleState(r.battle, r.hostSlot || 'O');
+    }
+    if(!r.phase || r.phase==='starting') r.phase = 'playing';
+    return r;
+  });
+  attachRoomListener();
+}
+
+function localSettleAndReturn(state, player){
+  const lines = collectWinsForGrid(state.grid, player);
+  if (!lines.length) return state;
+  let totalSp=0, lightHeals=0, darkStacksGain=0;
+  lines.forEach(line=>{
+    totalSp += calcLineSp(line);
+    const isVertical = (line[1]-line[0]===3 && line[2]-line[1]===3);
+    if(isVertical){
+      const faction = (PLAYER_CONFIG[player]?.faction||'light');
+      if(faction==='light') lightHeals += 8;
+      if(faction==='dark') darkStacksGain += 1;
+    }
+  });
+  state.data[player].sp = Math.min(100, state.data[player].sp + totalSp);
+  if(lightHeals>0) state.data[player].hp = Math.min(100, state.data[player].hp + lightHeals);
+  if(darkStacksGain>0) state.data[player].darkStacks = Math.min(2, state.data[player].darkStacks + darkStacksGain);
+  const uniqueCells=[...new Set(lines.flat())];
+  uniqueCells.forEach(idx=>{
+    state.grid[idx]=null;
+    state.queues.O = state.queues.O.filter(v=>v!==idx);
+    state.queues.X = state.queues.X.filter(v=>v!==idx);
+  });
+  state.lastEvent = { type:'line', player, sp:totalSp||0, heal:lightHeals||0, darkStacksGain:darkStacksGain||0, newDarkStacks:state.data[player].darkStacks||0, lines, ts:Date.now() };
+  state.winLines = lines;
+  return state;
+}
+
+function tap(i){
+  if (onlineMode) return tapOnline(i);
+}
+async function tapOnline(i){
+  if (!onlineMode) return;
+  playSound('tap');
+  await battleRef().transaction(state=>{
+    if(!state) state = initialBattleState();
+    if(state.turn !== mySlot || state.resolving || state.winner) return state;
+    if(state.placedThisTurn) return state;
+    if(state.grid[i]) return state;
+    if((state.queues[mySlot]||[]).length>=3){
+      const removed = state.queues[mySlot].shift();
+      state.grid[removed]=null;
+    }
+    state.grid[i]=mySlot;
+    state.queues[mySlot]=state.queues[mySlot]||[];
+    state.queues[mySlot].push(i);
+    state.placedThisTurn=true;
+    state = localSettleAndReturn(state, mySlot);
+    return state;
+  });
+}
+
+async function useSkill(type){
+  if (!onlineMode) return;
+  playSound(type);
+  await battleRef().transaction(state=>{
+    if(!state) return state;
+    const p=mySlot;
+    if(state.turn!==p || state.winner || state.resolving || !state.placedThisTurn) return state;
+    if(state.data[p].stunned>0 || state.data[p].skillUsed>=3) return state;
+    let cost=(type==='atk'?20:type==='stn'?60:40);
+    if(state.data[p].sp<cost) return state;
+    const target=otherSlot(p);
+    state.data[p].sp -= cost;
+    state.data[p].skillUsed += 1;
+    state.data[p].ult = Math.min(100,(state.data[p].ult||0) + (type==='atk'?25:(type==='stn'?35:20)));
+    let event = {type:'skill', skill:type, player:p, target, ts:Date.now()};
+    if(type==='atk'){
+      let dmg=10;
+      if(state.data[p].darkStacks>=1) dmg+=2;
+      if(state.data[p].darkStacks>=2){ dmg+=2; if(Math.random()<0.4) dmg+=4; }
+      state.data[p].darkStacks=0;
+      if(state.data[target].defending){ dmg=Math.max(0,dmg-5); state.data[target].defending=false; }
+      state.data[target].hp=Math.max(0,state.data[target].hp-dmg);
+      event.damage=dmg;
+    } else if(type==='def'){
+      state.data[p].defending=true;
+    } else if(type==='hel'){
+      state.data[p].hp=Math.min(100,state.data[p].hp+8);
+      event.heal=8;
+    } else if(type==='stn'){
+      state.data[target].stunned=3;
+    }
+    if(state.data.O.hp<=0 || state.data.X.hp<=0) state.winner = state.data.O.hp<=0?'X':'O';
+    state.lastEvent = event;
+    return state;
+  });
+}
+
+async function swapTurn(){
+  if (!onlineMode) return;
+  await battleRef().transaction(state=>{
+    if(!state) return state;
+    if(state.turn !== mySlot || state.winner) return state;
+    if(state.data[state.turn].stunned>0) state.data[state.turn].stunned--;
+    state.data[state.turn].skillUsed=0;
+    state.placedThisTurn=false;
+    state.turn = otherSlot(state.turn);
+    state.data[state.turn].defending=false;
+    state.timeLeft=60;
+    state.turnEndsAt=Date.now()+60000;
+    state.lastEvent={type:'turn',player:state.turn,ts:Date.now()};
+    state.winLines=[];
+    return state;
+  });
+}
+
+async function castUlt(){
+  if (!onlineMode) return;
+  await battleRef().transaction(state=>{
+    if(!state) return state;
+    const p=mySlot;
+    if(state.turn!==p || state.winner || (state.data[p].ult||0)<100) return state;
+    state.data[p].ult=0;
+    state.lastEvent={type:'ult', ultCast:true, player:p, ts:Date.now()};
+    return state;
+  });
+}
+
+function initLocalFallback(){
+  // keep simple local preview if firebase unavailable
+  updateUI();
+}
+
+function startPresenceTimer(){
+  clearInterval(timer);
+  timer=setInterval(()=>{
+    updateTimerDisplay();
+    if(onlineMode && battleState.turn===mySlot && battleState.turnEndsAt && Date.now()>=battleState.turnEndsAt && !isGameOver()) swapTurn();
+  },250);
+}
+
+document.getElementById('btnRematch').onclick=()=>location.reload();
+document.getElementById('btnBackMenu').onclick=()=>location.href='menu.html';
+document.getElementById('endTurnBtn').onclick=()=>swapTurn();
+document.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault(); castUlt();}});
+
+buildBoard();
+if (onlineMode) {
+  ensureOnlineBattle().then(()=>{ startPresenceTimer(); updateUI(); }).catch(err=>{ console.warn(err); initLocalFallback(); startPresenceTimer(); });
+} else {
+  initLocalFallback(); startPresenceTimer();
+}
+</script>
+</body></html>
